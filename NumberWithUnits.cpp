@@ -10,9 +10,9 @@ using namespace std;
 
 namespace ariel{
   
-			NumberWithUnits::NumberWithUnits(double U,string T){
-        unit=U;
-        type=T;
+			NumberWithUnits::NumberWithUnits(double u,string t){
+        unit=u;
+        type=t;
       }
 			void NumberWithUnits::read_units(ifstream &text){
 
@@ -24,7 +24,7 @@ namespace ariel{
 			NumberWithUnits operator += (NumberWithUnits &num1,const NumberWithUnits &num2){
         return NumberWithUnits(0,"");
       }
-			NumberWithUnits operator + (const NumberWithUnits& num1, double add){
+			NumberWithUnits operator + (const NumberWithUnits& num1){
         return NumberWithUnits(0,"");
       }
 			NumberWithUnits operator - (const NumberWithUnits &num1, const NumberWithUnits &num2){
@@ -76,7 +76,8 @@ namespace ariel{
       }
 
 			ostream& operator<<(ostream &os, const NumberWithUnits &num){
-        return os << num;
+        os << num.unit << "[" << num.type << "]";
+        return os;
       }
       istream& operator>>(istream &is, NumberWithUnits &num){
         return is;
