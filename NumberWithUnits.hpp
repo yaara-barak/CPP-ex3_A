@@ -15,6 +15,7 @@ namespace ariel{
 		public:
 			NumberWithUnits(double, std::string);
 			static void read_units(std:: ifstream&);
+			static double convert(std::string,std::string,double);
 
 			friend NumberWithUnits operator + (const NumberWithUnits &num1, const NumberWithUnits &num2);
 			friend NumberWithUnits operator += (NumberWithUnits &num1,const NumberWithUnits &num2);
