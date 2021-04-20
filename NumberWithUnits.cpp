@@ -23,24 +23,32 @@ namespace ariel{
           while(text >> num1 >> from >> op >> num2 >> to){
             //add to the map the units
             units[from][to]=num2;
-            units[to][from]=(double)1/num2;
-            //create new proportion
-            for(auto [unit, type] : units[to]){
-              units[from][unit] = type*units[from][to];
-              units[unit][from] = (double)1/type*units[from][to];
-            }
-            for(auto [unit, type] : units[from]){
-              units[to][unit] = type*units[to][from];
-              units[unit][to] = (double)1/type*units[to][from];
-            }
+            units[to][from]=1/num2;
           }
       }
 
       double NumberWithUnits::convert (const string from, const string to, double num){
-            if (!(units.at(from).contains(to))){
-              throw invalid_argument{"illeagal operation"};
+            double sum;
+            if (units.at(from).contains(to)==true){
+              return num*units.at(from).at(to);
             }
-            return num*units.at(to).at(from);
+            else{
+              sum=1;
+              string local_from=from;
+              string local_to=units.find(from)->first;
+              while(local_to==to){
+                sum*=units.at(local_from).at(local_to);
+                try{
+                  local_from=local_to;
+                  local_to=units.find(local_from)->first;
+                }
+                catch(const exception& e) {
+                  throw invalid_argument{"illeagal operation"};
+                }
+              }
+              sum*=units.at(local_from).at(to);
+            }
+            return sum*num;
       }
 
 			NumberWithUnits operator + (const NumberWithUnits &num1, const NumberWithUnits &num2){
@@ -97,16 +105,22 @@ namespace ariel{
       }
 
 			NumberWithUnits& NumberWithUnits::operator++(){
+        unit++;
         return *this;
       }         
       const NumberWithUnits NumberWithUnits::operator++(int){
-        return NumberWithUnits(0,"");
+        int u=unit;
+        unit++;
+        return NumberWithUnits(u,type);
       }
       NumberWithUnits& NumberWithUnits::operator--(){
+        unit--;
         return *this;
       }       
       const NumberWithUnits NumberWithUnits::operator--(int){
-        return NumberWithUnits(0,"");
+        int u=unit;
+        unit--;
+        return NumberWithUnits(u,type);
       }
 
 			ostream& operator<<(ostream &os, const NumberWithUnits &num){
@@ -114,6 +128,9 @@ namespace ariel{
         return os;
       }
       istream& operator>>(istream &is, NumberWithUnits &num){
+        char a1='[';
+        char a2=']';
+        is>>num.unit>>a1>>num.type;
         return is;
       }
 
