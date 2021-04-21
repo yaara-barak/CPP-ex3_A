@@ -5,7 +5,9 @@
 #include <map>
 #include <sstream>
 #include <stdexcept>
+#include <stdlib.h>
 using namespace std;
+const float EPS=0.001;
 
 
 namespace ariel{
@@ -22,33 +24,31 @@ namespace ariel{
           string from, to, op;
           while(text >> num1 >> from >> op >> num2 >> to){
             //add to the map the units
-            units[from][to]=num2;
-            units[to][from]=1/num2;
+            if (!units.contains(from)){units[from][""]=double{};}
+            if (!units.contains(to)){units[to][""]=double{};}
+            units.at(from).insert({to,num2});
+            units.at(to).insert({from,1/num2});
+            for(auto const &map : units[from]){
+                units[map.first][to]=1/(map.second * units[to][from]);
+                units[to][map.first]=map.second * units[to][from];
+            }
+            for(auto const &map : units[to]){
+                units[map.first][from]=1/(map.second *units[from][to] );
+                units[from][map.first]=map.second * units[from][to];
+            }
           }
       }
 
       double NumberWithUnits::convert (const string from, const string to, double num){
             double sum;
-            if (units.at(from).contains(to)==true){
-              return num*units.at(from).at(to);
+            try{
+                sum=units.at(from).at(to);
             }
-            else{
-              sum=1;
-              string local_from=from;
-              string local_to=units.find(from)->first;
-              while(local_to==to){
-                sum*=units.at(local_from).at(local_to);
-                try{
-                  local_from=local_to;
-                  local_to=units.find(local_from)->first;
-                }
-                catch(const exception& e) {
-                  throw invalid_argument{"illeagal operation"};
-                }
-              }
-              sum*=units.at(local_from).at(to);
+            catch(const exception& e){
+              throw invalid_argument{"illeagal operation"};
             }
-            return sum*num;
+            //cout <<num <<" "<<from <<" is "<<num*units.at(from).at(to)<<" "<<to<<endl;
+            return num*units.at(from).at(to);
       }
 
 			NumberWithUnits operator + (const NumberWithUnits &num1, const NumberWithUnits &num2){
@@ -86,22 +86,70 @@ namespace ariel{
       }
 
 			bool NumberWithUnits::operator>(const NumberWithUnits &num) const{
-        return false;
+          if (type!=num.type && !units.at(type).contains(num.type)){
+            throw invalid_argument("illeagal operation");
+          }
+          if (type==num.type){
+            return (unit>num.unit);
+          }
+          else{
+            return convert(type,num.type,unit)>num.unit;
+          }
       }
       bool NumberWithUnits::operator>=(const NumberWithUnits &num) const{
-        return false;
+          if (type!=num.type && !units.at(type).contains(num.type)){
+            throw invalid_argument("illeagal operation");
+          }
+          if (type==num.type){
+            return (unit>=num.unit);
+          }
+          else{
+            return convert(type,num.type,unit)>=num.unit;
+          }
       }
       bool NumberWithUnits::operator<(const NumberWithUnits &num) const{
-        return false;
+        if (type!=num.type && !units.at(type).contains(num.type)){
+            throw invalid_argument("illeagal operation");
+          }
+          if (type==num.type){
+            return (unit<num.unit);
+          }
+          else{
+            return convert(type,num.type,unit)<num.unit;
+          }
       }
       bool NumberWithUnits::operator<=(const NumberWithUnits &num) const{
-        return false;
+        if (type!=num.type && !units.at(type).contains(num.type)){
+            throw invalid_argument("illeagal operation");
+          }
+          if (type==num.type){
+            return (unit<=num.unit);
+          }
+          else{
+            return convert(type,num.type,unit)<=num.unit;
+          }
       }
 			bool NumberWithUnits::operator==(const NumberWithUnits &num) const{
-        return false;
+        if (type!=num.type && !units.at(type).contains(num.type)){
+            throw invalid_argument("illeagal operation");
+        }
+        if (type==num.type){
+            return (unit==num.unit);
+        }
+        else{
+            return abs(convert(type,num.type,unit)-num.unit)>EPS;
+        }
       }
       bool NumberWithUnits::operator!=(const NumberWithUnits &num) const{
-        return false;
+        if (type!=num.type && !units.at(type).contains(num.type)){
+            throw invalid_argument("illeagal operation");
+        }
+        if (type==num.type){
+            return (unit!=num.unit);
+        }
+        else{
+            return convert(type,num.type,unit)!=num.unit;
+        }
       }
 
 			NumberWithUnits& NumberWithUnits::operator++(){
@@ -131,6 +179,8 @@ namespace ariel{
         char a1='[';
         char a2=']';
         is>>num.unit>>a1>>num.type;
+        if (!NumberWithUnits::units.contains(num.type))
+          throw invalid_argument{"illeagal operation"};
         return is;
       }
 

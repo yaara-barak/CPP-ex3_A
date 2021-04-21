@@ -39,9 +39,9 @@ TEST_CASE ("math operators checks"){
     CHECK_EQ(obj5,NumberWithUnits{2.1, "m"});
     //check =-
     obj3=-obj2;
-    CHECK_EQ(obj3,obj1);//cm=-cm=cm
+    CHECK_EQ(obj3,NumberWithUnits{-32, "cm"});//cm=-cm=cm
     obj4=-obj3;
-    CHECK_EQ(obj4,NumberWithUnits{58, "cm"});//cm=-cm=cm
+    CHECK_EQ(obj4,-obj3);//cm=-cm=cm
     //check unary +
     CHECK_EQ(+obj8,NumberWithUnits{0.1,"m"});//the object sould stay the same 
     ////check unary -
@@ -111,12 +111,12 @@ TEST_CASE ("++ and -- operators checks"){
     obj20--;
     CHECK_EQ(obj20,NumberWithUnits{2,"kg"});
     CHECK_EQ(obj20--,NumberWithUnits{2,"kg"});
-    CHECK_EQ(obj20,NumberWithUnits{41,"kg"});
+    CHECK_EQ(obj20,NumberWithUnits{1,"kg"});
 }
 
 TEST_CASE ("* operator checks"){
     NumberWithUnits obj30{1,"kg"}; 
     CHECK_EQ(obj30*4,NumberWithUnits{4,"kg"});
-    CHECK_EQ(3*obj30,NumberWithUnits{12,"kg"});
+    CHECK_EQ(3*obj30,NumberWithUnits{3,"kg"});
 
 }
